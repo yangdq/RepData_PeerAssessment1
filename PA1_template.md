@@ -1,30 +1,14 @@
-# Reproducible Research: Peer Assessment 1
+#title: "Reproducible Research: Peer Assessment 1"
+output: 
+  html_document:
+    keep_md: true
+
 
 
 ## Loading and preprocessing the data
 
 ```r
 library(dplyr)
-```
-
-```
-## Warning: package 'dplyr' was built under R version 3.2.3
-```
-
-```
-## 
-## Attaching package: 'dplyr'
-## 
-## The following objects are masked from 'package:stats':
-## 
-##     filter, lag
-## 
-## The following objects are masked from 'package:base':
-## 
-##     intersect, setdiff, setequal, union
-```
-
-```r
 rawactivity <- read.csv("activity.csv", header = TRUE)
 rawactivity$date <- as.Date(as.character(rawactivity$date), "%Y-%m-%d")
 ```
@@ -34,15 +18,30 @@ rawactivity$date <- as.Date(as.character(rawactivity$date), "%Y-%m-%d")
 
 ```r
 activity <- rawactivity[!is.na(rawactivity$steps),]
-meanStep <- mean(activity$steps)
-medianStep <- median(activity$steps)
+aggactivity <- aggregate(activity$steps, list(activity$date), sum)
+meanStep <- mean(aggactivity$x)
+medianStep <- median(aggactivity$x)
 meanStep
-medianStep
-hist(activity$steps)
 ```
 
-![](PA1_template_files/figure-html/totalSteps-1.png) 
-The average totoal number of steps is 37.3825996, and the median total number of steps is 0.
+```
+## [1] 10766.19
+```
+
+```r
+medianStep
+```
+
+```
+## [1] 10765
+```
+
+```r
+hist(aggactivity$x, breaks=10, xlab = 'Steps')
+```
+
+![plot of chunk totalSteps](figure/totalSteps-1.png) 
+The average totoal number of steps is 1.0766189 &times; 10<sup>4</sup>, and the median total number of steps is 10765.
 
 ## What is the average daily activity pattern?
 
@@ -52,7 +51,7 @@ intervalReport <- summarize(intervalGroups, averageSteps=mean(steps))
 plot(intervalReport$interval, intervalReport$averageSteps, type = "l" )
 ```
 
-![](PA1_template_files/figure-html/stepsInterval-1.png) 
+![plot of chunk stepsInterval](figure/stepsInterval-1.png) 
 
 ```r
 maxInterval <- intervalReport[(intervalReport$averageSteps == max(intervalReport$averageSteps)), c("interval")]
@@ -72,13 +71,32 @@ for(index in naIndexes){
   fullactivity[index,]$steps <- intervalReport[avgIndex, ]$averageSteps
 }
 
-filledmeanStep <- mean(fullactivity$steps)
-filledmedianStep <- median(fullactivity$steps)
-hist(fullactivity$steps)
+aggactivity <- aggregate(fullactivity$steps, list(fullactivity$date), sum)
+filledmeanStep <- mean(aggactivity$x)
+filledmedianStep <- median(aggactivity$x)
+filledmeanStep
 ```
 
-![](PA1_template_files/figure-html/fillMissingValues-1.png) 
-The average step filled data of averages is 37.3825996, and the median step with filled data of average is 0.  The values are the same as the filled values are just average from the real data.
+```
+## [1] 10766.19
+```
+
+```r
+filledmedianStep
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+hist(aggactivity$x, breaks=10, xlab = 'Steps')
+```
+
+![plot of chunk fillMissingValues](figure/fillMissingValues-1.png) 
+The total number of missing values in the dataset is 2304.  In order to fill the missing data, use the average steps on the same time in other days.  For example, if the step is NA at interval 25 on 2012-10-02, use the average step value of inteval 25 from other days.
+
+The average step filled data of averages is 1.0766189 &times; 10<sup>4</sup>, and the median step with filled data of average is 1.0766189 &times; 10<sup>4</sup>.  The values are the same as the filled values are just average from the real data on the same time of the day.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
@@ -94,6 +112,6 @@ library(lattice)
 xyplot(averageSteps ~ interval | weekday , data =weekReport, type = "l" , layout=c(1,2), ylab="Number of Steps")
 ```
 
-![](PA1_template_files/figure-html/weekdayPattern-1.png) 
+![plot of chunk weekdayPattern](figure/weekdayPattern-1.png) 
 Based on the Plot, the pattern between weekend and weekend are similar.
 

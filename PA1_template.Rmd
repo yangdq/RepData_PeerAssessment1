@@ -15,11 +15,14 @@ rawactivity$date <- as.Date(as.character(rawactivity$date), "%Y-%m-%d")
 
 
 ## What is mean total number of steps taken per day?
-```{r totalSteps, results="hide"}
+```{r totalSteps}
 activity <- rawactivity[!is.na(rawactivity$steps),]
-meanStep <- mean(activity$steps)
-medianStep <- median(activity$steps)
-hist(activity$steps)
+aggactivity <- aggregate(activity$steps, list(activity$date), sum)
+meanStep <- mean(aggactivity$x)
+medianStep <- median(aggactivity$x)
+meanStep
+medianStep
+hist(aggactivity$x, breaks=10, xlab = 'Steps')
 ```
 The average totoal number of steps is `r meanStep`, and the median total number of steps is `r medianStep`.
 
@@ -45,12 +48,17 @@ for(index in naIndexes){
   fullactivity[index,]$steps <- intervalReport[avgIndex, ]$averageSteps
 }
 
-filledmeanStep <- mean(fullactivity$steps)
-filledmedianStep <- median(fullactivity$steps)
-hist(fullactivity$steps)
+aggactivity <- aggregate(fullactivity$steps, list(fullactivity$date), sum)
+filledmeanStep <- mean(aggactivity$x)
+filledmedianStep <- median(aggactivity$x)
+filledmeanStep
+filledmedianStep
+hist(aggactivity$x, breaks=10, xlab = 'Steps')
 
 ```
-The average step filled data of averages is `r filledmeanStep`, and the median step with filled data of average is `r filledmedianStep`.  The values are the same as the filled values are just average from the real data.
+The total number of missing values in the dataset is `r totalMissingValues`.  In order to fill the missing data, use the average steps on the same time in other days.  For example, if the step is NA at interval 25 on 2012-10-02, use the average step value of inteval 25 from other days.
+
+The average step filled data of averages is `r filledmeanStep`, and the median step with filled data of average is `r filledmedianStep`.  The values are the same as the filled values are just average from the real data on the same time of the day.
 
 ## Are there differences in activity patterns between weekdays and weekends?
 ```{r weekdayPattern}
